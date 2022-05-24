@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <title>Sudoku Game</title>
+</head>
+
+    <header>
+        <h1 class="title">Sudoku Game</h1>
+        <div id="setup-game">
+            <div id="diff">
+                <h3>Choose difficulty: </h3>
+                <label><input id="diff-1" type="radio" name="diff" value="easy" checked>easy</label>
+                <label><input id="diff-2" type="radio" name="diff" value="medium" >medium</label>
+                <label><input id="diff-3" type="radio" name="diff" value="hard" >hard</label>
+            </div>
+            <div id="time">
+                <h3>Choose time: </h3>
+                <label><input id="time-1" type="radio" name="time" value="three" checked>three</label>
+                <label><input id="time-2" type="radio" name="time" value="five" >five</label>
+                <label><input id="time-3" type="radio" name="time" value="ten" >ten</label>
+            </div>
+            <div id="theme">
+                <h3>Choose theme: </h3>
+                <label><input id="theme-1" type="radio" name="theme" value="light" checked>light</label>
+                <label><input id="theme-2" type="radio" name="theme" value="dark" >dark</label>
+            </div>
+        </div>
+        <div id="lower-header"><button id="startButton" onclick="handleStart()">Start</button></div>
+        
+        
+    </header>
+    <body>
+    <div id="stats">
+        <p id="timer"> </p>
+        
+    </div>
+<div id="box">
+    <div class="grid-container" >
+        
+      </div>
+      <button id="submit" onclick="submitAnswer()">Submit</button>
+</div>
+    
+    </body>
+    <script src="node_modules/sweetalert2/dist/sweetalert2.js"></script>
+    <script src="script.js" ></script>
+</html>

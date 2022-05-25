@@ -51,6 +51,7 @@ p#timer {
 } */
 #submit{
     width: 60px;
+    align-items: center;
 }
 .grid-container {
     display: grid;

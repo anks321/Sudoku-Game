@@ -7,8 +7,9 @@ for(var i =0;i<81;i++){
     var newDiv=document.createElement("input");
     newDiv.className='grid-item';
     
-    newDiv.type="number";
-    newDiv.setAttribute("oninput","this.value=this.value.replace(/[^0-9]/g,'');")
+    newDiv.type="text";
+    newDiv.setAttribute("input","this.value=this.value.replace(/[^0-9]/g,'');")
+    
     newDiv.setAttribute("maxlength","1")
     grids.appendChild(newDiv);
 }
@@ -21,21 +22,28 @@ var clns=(str)=>{
 var timer;
 var timeremaining;
 var difficulty;
+var solution;
+var sudoku;
 function startTimer(){
     if(id("time-1").checked)timeremaining= 180;
     else if(id("time-2").checked)timeremaining= 300;
     else timeremaining= 600;
     id("timer").textContent=timeConversion(timeremaining);
     timer=setInterval(function(){
-        timeremaining--;
+        timeremaining=timeremaining-1;
         if(timeremaining===0){timeOut();clearInterval(timer);}
         id("timer").textContent=timeConversion(timeremaining);
         },1000)
 
 }
 function timeOut(){
+    clearInterval(timer);
     alert("Timeout")
+    submit.style.display="none";
+    grids.style.display="none";
+    id("timer").innerHTML="Timeout Start a New Game"
 }
+
 function setDifficulty(){
     var diffi;
     if(id("diff-1").checked) diffi = "easy";
@@ -51,14 +59,14 @@ function timeConversion(time){
     return min+":"+sec;
 }
 
-function handleStart(){
+async function handleStart(){
     const grids=document.querySelector(".grid-container");
     grids.style.display="none";
     const boards = document.getElementById("box")
     boards.style.display="none";
     difficulty=setDifficulty();
     clearInterval(timer);
-    startTimer();
+    
     var url='https://sugoku.herokuapp.com/board?difficulty='+difficulty;
     const arr=clns('grid-item');
     for (var i =0;i<arr.length;i++){
@@ -66,10 +74,10 @@ function handleStart(){
             arr[i].readOnly=false;
                 
         }
-    fetch(url)
+    sudoku=await fetch(url)
     .then(res => res.json())
         .then(data=>{
-            console.log(data);
+            
             const board=data.board;
 
             const arr=clns('grid-item');
@@ -85,13 +93,31 @@ function handleStart(){
                     arr[i].style.backgroundColor="white";
                     arr[i].oninput="this.value=this.value.replace(/[^0-9]/g,'');";
                 }
+                arr[i].style.backgroundColor="none";
+
                 
             }
+            return board;
         });
+    console.log(sudoku);
+    
+    data={board:sudoku};
+    solution = await fetch('https://sugoku.herokuapp.com/solve', {
+        method: 'POST',
+        body: encodeParams(data),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    })
+        .then(response => response.json())
+            .then(response => {
+                return response.solution;
+                }).catch(console.warn);
+    console.log(solution);
+
     
     boards.style.display="grid";
     grids.style.display="grid";
     submit.style.display="block";
+    startTimer();
 }
 function submitAnswer(){
     var x = new Array(9);
@@ -108,29 +134,38 @@ function submitAnswer(){
             x[Math.floor(i/9)][Math.floor(i%9)]=Number(arr[i].value);
         }
     }
-console.log(x);
-    const data={board:x};
+
     var result;
-    fetch('https://sugoku.herokuapp.com/validate', {
-        method: 'POST',
-        body: encodeParams(data),
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    })
-        .then(response => response.json())
-            .then(response => {
-                
-             if(response.status==="unsolved" || response.status==="broken"){
-                    alert("Wrong solution");
-                }
-            else if(response.status==="succes"){
-                    alert("Puzzle Solved");
-                    endGame();
-                }
-                }).catch(console.warn)
-    
+
+    var flag=0;
+    for(var i=0; i <9; i++) {
+        for(var j=0; j < 9; j++) {
+            if(arr[9*i+j].readOnly===true){
+                continue;
+            }
+            if(x[i][j]!==solution[i][j]){
+                flag=1;
+                arr[9*i+j].setAttribute("style","background-color: tomato")
+            }
+            else{
+                arr[9*i+j].style.backgroundColor="lightgreen"
+            }
+        }
+    }
+    if(flag){
+        endGame("Puzzle Not Solved");
+    }
+    else{
+        endGame("Puzzle Solved")
+    }
 }
-function endGame(){
-    return 1;
+function endGame(strin){
+    if(strin=="Puzzle Solved"){
+        clearInterval(timer);
+    }
+
+
+    alert(strin);
 }
 
 const encodeBoard = (board) => board.reduce((result, row, i) => result + `%5B${encodeURIComponent(row)}%5D${i === board.length -1 ? '' : '%2C'}`, '')
